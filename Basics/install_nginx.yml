@@ -2,6 +2,9 @@
 - hosts: localhost
  # Execute commands directly instead of over SSH
   connection: local
+ # Use sudo
+  become: true
+  become_method: sudo
  # Tasks - what to do in this play
   tasks:
     # Ansible prints this name when running the playbook
@@ -11,5 +14,5 @@
         state: present # this package should be installed
         name: nginx
         cache_valid_time: 18000
-      # Use sudo
-      become: true
+      
+      
