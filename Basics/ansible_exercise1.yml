@@ -1,0 +1,20 @@
+- name: Configure application
+  hosts: all
+  become: true
+  become_method: sudo
+  vars:
+      repository_url: -b BasicPythonWeb https://github.com/Chandru05/pythonweb.git
+      repository_path: /home/vagrant/BasicPythonWeb
+
+  tasks:
+    - name: Install packages
+      apt: update_cache=yes name={{ item }} state=present
+      with_items:
+        - git
+        - python-pip
+
+    - name: Clone repository
+      git: repo='{{ repository_url }}' dest='{{ repository_path }}'
+
+    - name: Install requirements
+      pip: requirements='{{ repository_path }}/requirements.txt'
