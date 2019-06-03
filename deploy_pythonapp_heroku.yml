@@ -1,0 +1,39 @@
+---
+# this play should only execute once. Target local host and run modules directly
+- hosts: localhost
+  connection: local
+  # speed-up execution by disabling unused facts
+  gather_facts: false
+
+  # define variables used in play
+  vars:
+    app_name: pythonweb
+  tasks:
+    - name: Get existing heroku apps
+    command: heroku apps
+    changed_when: false
+    # save output in variable
+    register: apps
+
+    - name: Create heroku app
+    command: "heroku create {{app_name}}"
+    # only create app if it doesn't exist
+    when: 'apps.stdout.find(app_name) == -1'
+
+    # use the shell module to pick out the generated application URL and save it in variable
+    - name: Get the app URL
+      shell: heroku apps:info '{{app_name}}' --shell | grep -F 'web_url | cut -d '=' -f 2
+      changed_when: false
+      register: app_url
+
+    # Trigger a deploy with git push
+    - name: deploy to heroku
+      command: git push heroku master
+
+    # Use the URI module to make a test HTTP request to the application URL to verify the workflow
+    - name: Test deploy
+      uri: 
+
+          url: "{{app_url.stdout}}/ping"
+          status_code: 200
+
